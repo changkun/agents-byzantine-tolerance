@@ -1,0 +1,15 @@
+[project]
+name = "agents-byzantine-tolerance"
+version = "0.1.0"
+description = "Byzantine fault tolerance experiments for multi-agent LLM systems"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.50.0",
+    "openai>=1.60.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "pytest",
+]
