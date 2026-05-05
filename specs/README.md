@@ -2,7 +2,7 @@
 
 Each spec describes one self-contained experiment: what it measures, how it's set up, ground truth (if any), and the hypotheses being tested.
 
-The six experiments split into two groups: **parallel consensus** (01–05), where N agents answer the same question independently, and **sequential chains** (06), where agents process each other's output.
+The seven experiments split into three architectures: **parallel consensus** (01–05), where N agents answer the same question independently; **sequential chains** (06), where agents process each other's output; and **adversarial dialectic** (07), where two agents debate under an external judge.
 
 ## Parallel-consensus experiments
 
@@ -20,6 +20,10 @@ The six experiments split into two groups: **parallel consensus** (01–05), whe
 
 6. **[06-cascading-hallucination.md](06-cascading-hallucination.md)** — the other dominant multi-agent pattern. K-stage pipeline where each agent consumes the previous stage's output. Do errors propagate, amplify, or get corrected? Do chains with re-grounding against the source beat chains without? This is where parallel-consensus intuitions break down.
 
+## Adversarial-dialectic experiments
+
+7. **[07-adversarial-debate.md](07-adversarial-debate.md)** — Irving-2018-style debate. Proposer vs. critic across fixed rounds; judge inspects only the staked leaf. Tests the strong claim that soundness needs only one honest player plus a calibrated judge, not honest majority. Provides debate variants of 03 (bug detection), 04 (ambiguity), and 05 (action gating) for head-to-head against voting at equal compute.
+
 ## Reading order
 
-If you only read two specs: **04** (ambiguous-spec detection — most actionable) and **06** (cascading — the alternative architecture where classical BFT intuitions invert). 01 is the shared baseline that the others build on.
+If you only read two specs: **04** (ambiguous-spec detection — most actionable) and **06** (cascading — where classical BFT intuitions invert). For the architectural alternative to voting, read **07**. 01 is the shared baseline that the others build on.
