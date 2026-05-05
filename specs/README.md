@@ -2,7 +2,7 @@
 
 Each spec describes one self-contained experiment: what it measures, how it's set up, ground truth (if any), and the hypotheses being tested.
 
-The seven experiments split into three architectures: **parallel consensus** (01–05), where N agents answer the same question independently; **sequential chains** (06), where agents process each other's output; and **adversarial dialectic** (07), where two agents debate under an external judge.
+Seven experiments split into three architectures: **parallel consensus** (01–05), where N agents answer the same question independently; **sequential chains** (06), where agents process each other's output; and **adversarial dialectic** (07), where two agents debate under an external judge. A separate repo, [changkun/debate](https://github.com/changkun/debate), holds the tool that productizes architecture 07 and is gated on spec 07a's results.
 
 ## Parallel-consensus experiments
 
@@ -24,9 +24,9 @@ The seven experiments split into three architectures: **parallel consensus** (01
 
 7. **[07-adversarial-debate.md](07-adversarial-debate.md)** — Irving-2018-style debate. Proposer vs. critic across fixed rounds; judge inspects only the staked leaf. Tests the strong claim that soundness needs only one honest player plus a calibrated judge, not honest majority. Provides debate variants of 03 (bug detection), 04 (ambiguity), and 05 (action gating) for head-to-head against voting at equal compute.
 
-## Tooling specs
+## Productization
 
-8. **[08-debate-plugin.md](08-debate-plugin.md)** — productization spec (not an experiment). A `debate` CLI orchestrator with an optional Stop hook. Critic output is delivered to the proposer as a verbatim user message via `claude --resume`; no skills, slash commands, or plugin templates allowed in the channel. Each run is a persisted session under `.debate/`; clean runs are silent, unresolved runs surface a contention-scored headline. Gated on spec 07a's critic-found-bug rate; do not build until 07 returns positive.
+The tool spec that builds on spec 07 lives in a separate repo: [changkun/debate](https://github.com/changkun/debate). It's gated on this repo's spec 07a returning positive (critic-found-bug rate ≥ 60%); do not build until then.
 
 ## Reading order
 
