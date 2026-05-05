@@ -26,7 +26,7 @@ The seven experiments split into three architectures: **parallel consensus** (01
 
 ## Tooling specs
 
-8. **[08-debate-plugin.md](08-debate-plugin.md)** — productization spec (not an experiment). A `debate` CLI orchestrator with an optional Stop hook. Critic output is delivered to the proposer as a verbatim user message via `claude --resume`; no skills, slash commands, or plugin templates allowed in the channel. Gated on spec 07a's critic-found-bug rate; do not build until 07 returns positive.
+8. **[08-debate-plugin.md](08-debate-plugin.md)** — productization spec (not an experiment). A `debate` CLI orchestrator with an optional Stop hook. Critic output is delivered to the proposer as a verbatim user message via `claude --resume`; no skills, slash commands, or plugin templates allowed in the channel. Each run is a persisted session under `.debate/`; clean runs are silent, unresolved runs surface a contention-scored headline. Gated on spec 07a's critic-found-bug rate; do not build until 07 returns positive.
 
 ## Reading order
 

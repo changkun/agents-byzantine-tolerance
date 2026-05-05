@@ -77,7 +77,8 @@ debate [--main claude] [--side codex] [--side-count 1]
        [--task-context "<original task>"]
        [--judge none|llm|human]
        [--cost-cap 50000]
-       [--output review.md] [--format markdown|json]
+       [--state-dir .debate]
+       [--format markdown|json]
 ```
 
 Notes:
@@ -105,6 +106,53 @@ A single Stop hook entry in `.claude/settings.json`:
 
 That's it. No plugin manifest, no slash command, no skill. The hook is two lines because all the work is in the CLI. Default: hook is **not installed**; users opt in by adding the entry.
 
+## Session persistence
+
+Each debate run is a session with explicit start and end markers and an on-disk record. This is what makes the orchestrator auditable and the "review unresolved later" workflow possible.
+
+### Layout
+
+Each invocation creates a folder under `--state-dir` (default `.debate/`):
+
+```
+.debate/
+  log.jsonl                 # one line per debate run, appended at end
+  sessions/
+    <ISO8601>-<short-id>/
+      start.json            # timestamp, claude-session-id, task-context, diff snapshot, config
+      transcript.jsonl      # append-only: each round's messages, structured
+      attacks.jsonl         # per-attack records: id, location, status, rounds_survived, re_attacked
+      summary.md            # human-facing summary, written at termination
+      end.json              # termination condition, stats, exit code
+```
+
+### Lifecycle invariants the orchestrator must enforce
+
+- `start.json` written atomically before any agent process spawns.
+- `transcript.jsonl` and `attacks.jsonl` are append-only — never rewrite, never seek-back. A killed process leaves a valid (truncated) record.
+- `summary.md` and `end.json` are written only at clean termination.
+- `log.jsonl` is appended last, after `end.json` is durable. A run with `end.json` missing is an interrupted session; user can inspect `transcript.jsonl` directly.
+
+### Surfacing rule
+
+- **Zero unresolved leaves at termination**: orchestrator is silent on stdout except for one line referencing the `log.jsonl` entry. No summary file is opened or surfaced. `summary.md` is still written for audit, but the user is not interrupted.
+- **≥ 1 unresolved leaves**: orchestrator prints the path to `summary.md` plus the *headline contradicting signal* (see below) on stdout. Exit code 1.
+- **Interrupted (Ctrl-C, cost-cap, malformed-output)**: same as ≥ 1 unresolved — surface what's there.
+
+### Headline contradicting signal
+
+Among unresolved leaves, the headline is the attack with the highest **contention score**:
+
+```
+contention(attack) = rounds_survived + (1 if critic re_attacked_after_defense else 0)
+```
+
+Tie-break by first appearance. This is deliberately a cheap rule with no LLM scoring — adding semantic-scoring would re-introduce the lazy-judge problem at the headline step. If contention turns out to be a poor proxy in practice, upgrade later by having both sides self-report confidence each round and weighting by `confidence_critic × confidence_proposer`.
+
+### `.gitignore`
+
+`.debate/` should not be committed. Orchestrator checks `.gitignore` on first run and prints a warning (not a hard error) if `.debate/` is missing from it. Doesn't auto-edit the file — that's the user's call.
+
 ## Configuration
 
 Project-level `.debate.toml` overrides plugin defaults:
@@ -120,39 +168,46 @@ allow_style_attacks = false  # default: critic must attack behavior, not style
 
 ## Termination conditions
 
-The mediator terminates and writes the review when any of these fire:
+The mediator terminates and writes `summary.md` + `end.json` when any of these fire:
 
 1. **Steady state** — no new attacks two rounds running.
 2. **Max turn** — hard cap reached.
 3. **Cost cap** — token budget hit.
 4. **Malformed output** — critic produces ill-formed attacks two rounds running (defensive: model is broken or prompt collapsed).
-5. **User interrupt** — Ctrl-C.
+5. **User interrupt** — Ctrl-C; the orchestrator's signal handler still writes `end.json` before exiting.
 
-The output header names which condition fired, so the human knows whether to trust "0 unresolved" (steady state) or treat it as truncation (max-turn / cost-cap).
+The summary header names which condition fired, so the human knows whether to trust "0 unresolved" (steady state) or treat it as truncation (max-turn / cost-cap). Only steady-state termination with zero unresolved is "clean" — every other condition surfaces.
 
 ## Output format
 
-Markdown review:
+`summary.md` structure:
 
 ```
-# Debate review — terminated: steady-state | max-turn | cost-cap
+# Debate review — terminated: steady-state | max-turn | cost-cap | interrupted
+
+## Headline (most contested unresolved)
+- [security/api.py:88] Input sanitization
+  - Critic: framework auto-escape doesn't cover `LIKE` patterns.
+  - Proposer: parameterized via SQLAlchemy.
+  - **Stake**: input `'; DROP TABLE--%` against the search endpoint.
+  - Contention: 3 rounds survived, critic re-attacked after defense.
+
+## Other unresolved (2, sorted by contention)
+- ...
 
 ## Resolved (12)
-- [conceded] Off-by-one in pagination loop → fixed in src/api.py:42
+- [conceded] Off-by-one in pagination loop → fixed at src/api.py:42
 - [rebutted] Race condition claim → critic withdrew after seeing lock at api.py:18
-
-## Unresolved (3)  ← human reviews these
-- [security/api.py:88] Critic: input not sanitized.
-  Proposer: framework escapes.
-  **Stake**: try input `';DROP TABLE--`. (decisive leaf, not yet executed)
-- ...
 
 ## Stats
 critic-found-real-issue rate: 7/15 attacks led to a fix
 debate cost: 38k tokens, 6 turns, 2 critics
+session: .debate/sessions/2026-05-05T14-22-31-a3f9b1/
 ```
 
-The unresolved section is the entire justification for the tool. If it's mostly noise, the tool fails. The "stats" block is for the user to spot-check whether the critic is actually working — if `critic-found-real-issue rate` is near 0 across many sessions, the user should disable the plugin.
+When unresolved count is zero, `summary.md` still has the Resolved + Stats sections (no Headline, no Unresolved) and is written but not surfaced. The user only sees one line on stdout pointing at `.debate/log.jsonl`.
+
+The Headline section is the entire justification for the tool. If it's noise across many sessions, the tool fails — and the cross-session `log.jsonl` makes that measurable rather than vibes-based. The Stats block lets the user spot-check whether the critic is actually working: if `critic-found-real-issue rate` trends near 0, disable the hook.
 
 ## Risks
 
