@@ -11,11 +11,23 @@ see the bottom of this file for what's missing.
 
 | Run    | Date       | Debates | Records | Cost | Reproducer |
 |--------|------------|--------:|--------:|------|------------|
-| smoke  | 2026-05-06 | 2       | 8       | ~2 min wall | `python experiments/07_debate.py --smoke` |
+| smoke  | 2026-05-06 | 2       | 8       | ~2 min wall | `uv run python experiments/07_debate.py --smoke` |
 
 The spec wants 3 sub-tasks (07a/07b/07c) × 3 honesty conditions × 4 role
 assignments × 2 round budgets × 10–15 tasks × 5 trials. Smoke covers 07a only,
 both honest, claude_p_claude_c roles, 4 rounds, 2 snippets.
+
+## Run order
+
+1. **Smoke** — sanity check the wiring (~2 min):
+   `uv run python experiments/07_debate.py --smoke`
+2. **First spec-07 run that exercises the debate architecture** — the spec's
+   H6 test (p-byzantine proposer on a clear bug). The smoke run only proves
+   the harness; this is the first one that actually tests the architecture:
+   `uv run python experiments/07_debate.py --honesty p-byzantine --snippet-ids S01 --trials 5`
+3. **Broaden** along the axes in [How to extend (07a)](#how-to-extend-07a).
+
+The smoke run does not test the architecture — see Outcome below for why.
 
 ## Smoke configuration
 
@@ -48,11 +60,7 @@ invocations.
 
 The spec's prescribed test is the **p-byzantine** condition: force the proposer
 to claim "no_bug" on a known-buggy snippet, and measure whether the critic can
-recover. We didn't run that in smoke. The first non-smoke run should be:
-
-```bash
-python experiments/07_debate.py --honesty p-byzantine --snippet-ids S01 --trials 5
-```
+recover. We didn't run that in smoke — it's step 2 in [Run order](#run-order).
 
 If the critic stays silent under p-byzantine on a clear bug, the architecture
 fails at the gating constraint and the spec's H1/H3 ("debate beats voting" /
@@ -80,12 +88,15 @@ ground truth, not with role-assignment.
 
 ## How to extend (07a)
 
-1. **Run p-byzantine** (the actual test of the architecture):
-   `python experiments/07_debate.py --honesty p-byzantine --snippet-ids S01,S02 --trials 3`
+After step 2 of [Run order](#run-order) (the p-byzantine S01 run) lands,
+broaden along these axes:
+
+1. **Widen p-byzantine to more snippets**:
+   `uv run python experiments/07_debate.py --honesty p-byzantine --snippet-ids S01,S02 --trials 3`
 2. **c-lazy** (test H6 binding):
-   `python experiments/07_debate.py --honesty c-lazy --snippet-ids S01,S02 --trials 3`
+   `uv run python experiments/07_debate.py --honesty c-lazy --snippet-ids S01,S02 --trials 3`
 3. **Heterogeneous roles**: critic = codex while proposer = claude:
-   `python experiments/07_debate.py --roles claude_p_codex_c --trials 3`
+   `uv run python experiments/07_debate.py --roles claude_p_codex_c --trials 3`
 4. **Equal-compute baseline vs. spec 03**: spec calls for a head-to-head
    comparison at matched invocations. Cross-reference results/07/x.jsonl
    with results/03_bug_detection/x.jsonl.

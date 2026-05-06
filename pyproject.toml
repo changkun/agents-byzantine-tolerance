@@ -4,8 +4,10 @@ version = "0.1.0"
 description = "Byzantine fault tolerance experiments for multi-agent LLM systems"
 requires-python = ">=3.11"
 # Agents are spawned as subprocesses (claude -p, codex exec), so no LLM SDK deps.
-# pyyaml is for reading question banks; that's the only runtime dep.
+# pyyaml reads question banks; matplotlib renders the per-spec analysis plots
+# that the documented run sequence ends in (analysis/*_plot.py).
 dependencies = [
+    "matplotlib>=3.10.9",
     "pyyaml>=6.0",
 ]
 
