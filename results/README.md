@@ -17,7 +17,7 @@ invocations.
 | [01 Verifiable consensus](../specs/01-verifiable-consensus.md) | [01_verifiable_consensus/](01_verifiable_consensus/) | smoke ✅ | Unanimous → correct in 2/2 smoke cells (N=3) |
 | [02 Byzantine injection](../specs/02-byzantine-injection.md)   | [02_byzantine_injection/](02_byzantine_injection/) | smoke ✅ | Strong-lie efficacy collapsed at f=2 — agents overruled the injection |
 | [03 Bug detection](../specs/03-bug-detection-consensus.md)     | [03_bug_detection/](03_bug_detection/) | smoke ✅ | 4/4 unanimous-correct on N=3 across all categories (bank too small to test H3) |
-| [04 Ambiguous spec](../specs/04-ambiguous-spec-detection.md)   | — | ⏳ pending | — |
+| [04 Ambiguous spec](../specs/04-ambiguous-spec-detection.md)   | [04_ambiguous_spec/](04_ambiguous_spec/) | smoke ✅ | AUC 0.86 (1 pair, N=3) — disagreement tracks ambiguity, but tiny sample |
 | [05 Consensus gate](../specs/05-consensus-gated-actions.md)    | — | ⏳ pending | — |
 | [06 Cascading hallucination](../specs/06-cascading-hallucination.md) | — | ⏳ pending | — |
 | [07 Adversarial debate](../specs/07-adversarial-debate.md)     | — | ⏳ pending | — |

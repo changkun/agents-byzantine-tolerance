@@ -1,0 +1,68 @@
+# Spec pairs for Experiment 04 — Ambiguous-Spec Detection.
+#
+# Each pair has:
+#   id: pair identifier (P1, P2, ...)
+#   domain: short domain label
+#   decisions: ordered list of decision slots; each has:
+#       key: short identifier
+#       prompt: how the agent is asked about it
+#       kind: categorical | numeric
+#       options: only for categorical, the allowed values (lowercase)
+#   variants:
+#     unambiguous: spec text + ambiguity_set (slots that ARE under-specified
+#                  in this spec; expected near-empty)
+#     ambiguous:   spec text + ambiguity_set (slots that ARE under-specified;
+#                  the ground-truth label for "where should disagreement be?")
+#
+# Smoke ships one pair; full run wants 8–10. Add more pairs to this file
+# before running the full sweep.
+
+pairs:
+  - id: P1
+    domain: rate-limiter
+    decisions:
+      - key: algorithm
+        prompt: "Which algorithm?"
+        kind: categorical
+        options: [fixed-window, sliding-window, token-bucket, leaky-bucket]
+      - key: storage
+        prompt: "Where is rate state stored?"
+        kind: categorical
+        options: [in-memory, redis, sql, file]
+      - key: key_scope
+        prompt: "What is the rate-limit key?"
+        kind: categorical
+        options: [per-ip, per-user, per-api-key, global]
+      - key: rejection_behavior
+        prompt: "How are rate-limited requests handled?"
+        kind: categorical
+        options: [drop, queue, http-429, custom]
+      - key: persistence
+        prompt: "Does state persist across restarts?"
+        kind: categorical
+        options: ["yes", "no"]
+      - key: capacity
+        prompt: "What is the maximum burst capacity?"
+        kind: numeric
+      - key: refill_rate
+        prompt: "What is the steady-state refill rate (units per second)?"
+        kind: numeric
+    variants:
+      unambiguous:
+        text: |
+          Build a token-bucket rate limiter with capacity 100 and refill rate
+          10 units/second. Key by authenticated user ID. Return HTTP 429 on
+          rejection. Store rate state in process memory; do NOT persist across
+          restarts.
+        ambiguity_set: []
+      ambiguous:
+        text: |
+          Build a rate limiter.
+        ambiguity_set:
+          - algorithm
+          - storage
+          - key_scope
+          - rejection_behavior
+          - persistence
+          - capacity
+          - refill_rate
