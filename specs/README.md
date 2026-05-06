@@ -14,7 +14,9 @@ Seven experiments split into three architectures: **parallel consensus** (01–0
 | 04 — Ambiguous-spec detection  | ✅ | ✅ 2026-05-06 | ⏳ | [`results/04_ambiguous_spec/`](../results/04_ambiguous_spec/) |
 | 05 — Consensus-gated actions   | ✅ | ✅ 2026-05-06 | ⏳ | [`results/05_consensus_gate/`](../results/05_consensus_gate/) |
 | 06 — Cascading hallucination   | ✅ | ✅ 2026-05-06 | ⏳ | [`results/06_cascading/`](../results/06_cascading/) |
-| 07 — Adversarial debate        | ✅ | ✅ 2026-05-06 | ⏳ | [`results/07_debate/`](../results/07_debate/) |
+| 07a — Debate (bug detection)   | ✅ | ✅ 2026-05-06 | ⏳ | [`results/07_debate/`](../results/07_debate/) |
+| 07b — Debate (action gating)   | ⏳ | ⏳ | ⏳ | — |
+| 07c — Debate (ambiguity)       | ⏳ | ⏳ | ⏳ | — |
 
 Smoke = end-to-end pipeline check on a tiny config. Full = the spec-prescribed
 sweep. Smoke results are **not** sufficient evidence for any of the hypotheses

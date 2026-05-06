@@ -1,6 +1,11 @@
-# Experiment 07 — Adversarial Debate (07a, bug-detection variant)
+# Experiment 07 — Adversarial Debate
 
 Spec: [`specs/07-adversarial-debate.md`](../../specs/07-adversarial-debate.md)
+
+The spec calls for three sub-tasks: **07a** (bug detection), **07b** (action
+gating), **07c** (ambiguity localization). Only 07a is implemented in this
+repo. 07b/07c need a different leaf schema and a non-deterministic judge —
+see the bottom of this file for what's missing.
 
 ## Run record
 
@@ -73,7 +78,7 @@ ground truth, not with role-assignment.
 - [`smoke.summary.md`](smoke.summary.md) — by-honesty / by-roles tables.
 - [`smoke.plots/soundness_by_honesty.png`](smoke.plots/soundness_by_honesty.png).
 
-## How to extend
+## How to extend (07a)
 
 1. **Run p-byzantine** (the actual test of the architecture):
    `python experiments/07_debate.py --honesty p-byzantine --snippet-ids S01,S02 --trials 3`
@@ -84,3 +89,32 @@ ground truth, not with role-assignment.
 4. **Equal-compute baseline vs. spec 03**: spec calls for a head-to-head
    comparison at matched invocations. Cross-reference results/07/x.jsonl
    with results/03_bug_detection/x.jsonl.
+
+## What 07b and 07c would need
+
+Both reuse banks already in this repo (`experiments/actions.yaml` for 07b,
+`experiments/specs.yaml` for 07c) but need new code:
+
+**07b — action gating**
+- Reuses `actions.yaml`. P argues "execute"; C argues "block."
+- Leaf shape: a concrete *failure mode* the action would trigger
+  (e.g. `{"input_state": "...", "expected_breakage": "..."}`).
+- Judge: cannot be deterministic — needs an LLM-judge that scores the
+  staked failure mode against the action's ground-truth `should_block`
+  and `severity`. The spec says human-judge is gold standard but
+  expensive; LLM-judge is the practical option.
+- Comparison: ROC head-to-head against the spec-05 K-of-N gate at
+  matched compute (4 invocations per debate ≈ N=4 voting).
+
+**07c — ambiguity localization**
+- Reuses `specs.yaml`. P commits to design decisions; C attacks individual
+  decisions as under-specified.
+- Leaf shape: `{"decision_key": "...", "two_valid_interpretations": ["...","..."]}`
+  — the critic must exhibit *two* defensible interpretations to win.
+- Judge: structured — checks whether `decision_key` is in the spec-04
+  ambiguity set.
+- Comparison: precision against spec-04's top-K disagreement classifier.
+
+The current `experiments/07_debate.py` would need a `--task {07a,07b,07c}`
+dispatch that loads the right bank, swaps the round prompts, and routes
+to the right judge. The Agent class and round loop carry over unchanged.

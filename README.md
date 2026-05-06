@@ -242,19 +242,32 @@ uv run python experiments/06_cascading.py --smoke
 uv run python analysis/06_plot.py --input results/06_cascading/smoke.jsonl
 ```
 
-### 07 — Adversarial debate (07a bug-detection variant)
+### 07 — Adversarial debate
 
 Spec: [`specs/07-adversarial-debate.md`](specs/07-adversarial-debate.md).
-Fixed 4-round debate (R1 propose, R2 attack, R3 defend, R4 stake) on snippets
-from spec 03's bank. Deterministic leaf-judge inspects only the critic's R4
-stake. Honesty knob: `both | p-byzantine | c-lazy`. Roles knob:
-`<claude|codex>_p_<claude|codex>_c`.
+The spec defines three sub-tasks:
+
+- **07a** — bug detection (debate variant of spec 03). Deterministic
+  leaf-judge: critic's R4 stake is checked against the snippet's
+  ground-truth bug line / kind label.
+- **07b** — action gating (debate variant of spec 05). LLM-judge or
+  human-judge; ROC head-to-head against the K-of-N gate at equal compute.
+- **07c** — ambiguity localization (debate variant of spec 04). Critic's
+  staked leaf is compared against top-K disagreement from voting.
+
+**Implementation status: only 07a is built.** Fixed 4-round debate
+(R1 propose, R2 attack, R3 defend, R4 stake) on snippets from spec 03's
+bank. Honesty knob: `both | p-byzantine | c-lazy`. Roles knob:
+`<claude|codex>_p_<claude|codex>_c`. 07b and 07c reuse the action and spec
+banks from 05/04 and need a different leaf schema + a non-deterministic
+judge; not yet implemented.
 
 ```bash
+# 07a only:
 uv run python experiments/07_debate.py --smoke
 uv run python analysis/07_plot.py --input results/07_debate/smoke.jsonl
 
-# The actually-interesting test (forces the critic to do real work):
+# The actually-interesting 07a test (forces the critic to do real work):
 uv run python experiments/07_debate.py --honesty p-byzantine --snippet-ids S01,S02 --trials 3
 ```
 
