@@ -20,7 +20,7 @@ invocations.
 | [04 Ambiguous spec](../specs/04-ambiguous-spec-detection.md)   | [04_ambiguous_spec/](04_ambiguous_spec/) | smoke ✅ | AUC 0.86 (1 pair, N=3) — disagreement tracks ambiguity, but tiny sample |
 | [05 Consensus gate](../specs/05-consensus-gated-actions.md)    | [05_consensus_gate/](05_consensus_gate/) | smoke ✅ | 4/4 correct on N=3, but every cell unanimous — gates indistinguishable here |
 | [06 Cascading hallucination](../specs/06-cascading-hallucination.md) | [06_cascading/](06_cascading/) | smoke ✅ | Stage-1 trusted upstream-seeded sum even with source visible — H2 partly contradicted at K=2 |
-| [07 Adversarial debate](../specs/07-adversarial-debate.md)     | — | ⏳ pending | — |
+| [07 Adversarial debate](../specs/07-adversarial-debate.md)     | [07_debate/](07_debate/) | smoke ✅ | 2/2 sound; both critics produced 0 attacks — H6 (critic strength gates everything) untested but already worrying |
 
 ## File conventions
 
