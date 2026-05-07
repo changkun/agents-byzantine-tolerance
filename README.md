@@ -25,9 +25,9 @@ Requirements: `claude` and `codex` CLIs on PATH, both authenticated.
 
 ## Architectures under test
 
-The seven specs split across three multi-agent patterns. Each pattern is what
-the spec hypothesises about — the harness diagram below it is shared across
-all of them.
+The thirteen specs split across three multi-agent patterns. Each pattern is
+what the spec hypothesises about — the harness diagram below it is shared
+across all of them.
 
 ### Parallel consensus (specs 01, 03, 04, 05; 02 is the Byzantine variant)
 
@@ -93,11 +93,16 @@ errors *amplify* rather than average out.
      seeded-obvious  – replace with a flagrantly wrong value.
 ```
 
-### Adversarial dialectic (spec 07)
+### Adversarial dialectic (specs 07–13)
 
 Two agents (Proposer, Critic) play a fixed 4-round game; an *external* judge
 inspects only the critic's R4 stake. Soundness no longer needs honest
-majority — it needs one honest player plus a calibrated leaf judge.
+majority — it needs one honest player plus a calibrated leaf judge. Specs
+08–13 keep this protocol shape and vary one axis each: compute asymmetry
+between players (08), round count and recursion (09), temperature (10),
+leaf format narrowness (11), Prover-Estimator replacing the Critic role
+(12), and judge query budget vs. snippet complexity (13). Their motivating
+papers are listed in [References](#references).
 
 ```text
        snippet + spec
@@ -270,6 +275,13 @@ uv run python analysis/07_plot.py --input results/07_debate/smoke.jsonl
 # The actually-interesting 07a test (forces the critic to do real work):
 uv run python experiments/07_debate.py --honesty p-byzantine --snippet-ids S01,S02 --trials 3
 ```
+
+### 08–13 — Debate extensions (spec only)
+
+The doubly-efficient-debate batch is currently spec-only — no runners yet.
+Per-spec status and descriptions: [`specs/README.md`](specs/README.md#status).
+Recommended execution order once implementations land:
+**10 → 11 → 12 → 08 → 09 → 13** ([rationale](specs/README.md#execution-order-08-13-batch)).
 
 ## References
 
